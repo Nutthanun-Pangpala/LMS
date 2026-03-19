@@ -3,15 +3,20 @@ const { normalizeLog } = require('../utils/normalizer');
 
 exports.ingestLog = async (req, res) => {
     try {
+
+        if (!req.body || Object.keys(req.body).length === 0) {
+            return res.status(400).json({ error: 'No log data provided' });
+        }
         const rawLog = req.body;
         
-        // แปลงข้อมูลจากแหล่งต่างๆ (AWS, API, M365) เข้า Schema กลาง [cite: 20, 33]
         const normalizedData = normalizeLog(rawLog);
+
+
 
         const query = `
             INSERT INTO logs (
                 at_timestamp, tenant, source, severity, event_type,
-                src_ip, user, raw_data
+                src_ip, user, raw
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `;
         
@@ -23,19 +28,17 @@ exports.ingestLog = async (req, res) => {
             normalizedData.event_type,
             normalizedData.src_ip,
             normalizedData.user,
-            JSON.stringify(rawLog) // เก็บ raw ไว้ตามโจทย์ [cite: 40]
+            normalizedData.raw
         ];
 
         await pool.execute(query, values);
         res.status(202).json({ message: 'Log ingested and normalized' });
     } catch (error) {
-        console.error(error);
+        console.error("Full Error: " + error);
         res.status(500).json({ error: 'Ingestion failed' });
     }
 };
 
 exports.getLogs = async (req, res) => {
-    // ดึงข้อมูลตาม Tenant และเงื่อนไข Filter [cite: 23, 125]
     const { tenant, source, severity } = req.query;
-    // Logic การ Query MySQL พร้อมเงื่อนไข WHERE tenant = ?
 };

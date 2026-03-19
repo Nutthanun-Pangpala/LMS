@@ -2,7 +2,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const logRoutes = require('./router/logRouter');
+const logRoutes = require('./router/logRout');
 
 const app = express();
 app.use(cors());
