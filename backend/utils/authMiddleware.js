@@ -9,6 +9,7 @@ exports.protect = (req, res, next) => {
 
     if (!token) {
         return res.status(401).json({ error: 'Not authorized to access this route' });
+        console.warn('Authorization failed: No token provided');
     }
 
     try {
@@ -17,6 +18,7 @@ exports.protect = (req, res, next) => {
         next();
     } catch (err) {
         return res.status(401).json({ error: 'Token is invalid' });
+        console.error('Token verification failed:', err);
     }
 };
 exports.authorize = (...roles) => {
