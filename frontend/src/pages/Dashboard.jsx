@@ -1,66 +1,147 @@
-import React from "react";
+import { useCallback, useEffect, useState } from "react";
+import FilterBar from "../component/filterbar";
+import LogsTable from "../component/logsTable";
+import Sidebar from "../component/sidebar";
+import StatsCards from "../component/statsCards";
+import TimelineChart from "../component/timelineChart";
+import TopSection from "../component/topSection";
 
-
+const API_URL = import.meta.env.VITE_API_URL;
 
 function Dashboard() {
-  const [logs, setLogs] = React.useState([]);
-  const [error, setError] = React.useState(null);
-  const API_URL = import.meta.env.VITE_API_URL;
+  const [logs, setLogs]             = useState([]);
+  const [pagination, setPagination] = useState(null);
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState(null);
 
-  React.useEffect(() => {
-    const fetchLogs = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await fetch(`${API_URL}/api/logs/getLogs`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+  const [search, setSearch]         = useState("");
+  const [tenant, setTenant]         = useState("");
+  const [dateRange, setDateRange]   = useState({ from: "", to: "" });
+  const [page, setPage]             = useState(1);
+  const [activePage, setActivePage] = useState("dashboard");
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch logs");
-        }
+  const [tenantList, setTenantList] = useState([]);
 
-        const data = await response.json();
+  const fetchLogs = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem("token");
+      const params = new URLSearchParams({ page, limit: 10 });
+      if (tenant)         params.set("tenant", tenant);
+      if (search)         params.set("search", search);
+      if (dateRange.from) params.set("from", dateRange.from);
+      if (dateRange.to)   params.set("to",   dateRange.to);
+
+      const res = await fetch(`${API_URL}/api/logs/getLogs?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
         setLogs(data);
-      } catch (err) {
-        setError(err.message);
+        setPagination(null);
+        setTenantList((prev) => {
+          const merged = new Set([...prev, ...data.map((l) => l.tenant).filter(Boolean)]);
+          return [...merged];
+        });
+      } else {
+        const rows = data.data ?? [];
+        setLogs(rows);
+        setPagination(data.pagination ?? null);
+        setTenantList((prev) => {
+          const merged = new Set([...prev, ...rows.map((l) => l.tenant).filter(Boolean)]);
+          return [...merged];
+        });
       }
-    };
+    } catch (err) {
+      console.error("❌ fetchLogs:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, tenant, search, dateRange]);
 
-    fetchLogs();
-  }, []);
+  useEffect(() => {
+    const delay = search ? 300 : 0;
+    const id = setTimeout(fetchLogs, delay);
+    return () => clearTimeout(id);
+  }, [fetchLogs]);
+
+  const resetPage = () => setPage(1);
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <table>
-        <thead>
-          <tr>
-            <th>Timestamp</th>
-            <th>Tenant</th>
-            <th>Source</th>
-            <th>Severity</th>
-            <th>Event Type</th>
-            <th>Source IP</th>
-            <th>User</th>
-          </tr>
-        </thead>
-        <tbody>
-          {logs.map((log) => (
-            <tr key={log.id}>
-              <td>{new Date(log.at_timestamp).toLocaleString()}</td>
-              <td>{log.tenant}</td>
-              <td>{log.source}</td>
-              <td>{log.severity}</td>
-              <td>{log.event_type}</td>
-              <td>{log.src_ip}</td>
-              <td>{log.user}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    // Outer: Sidebar ซ้าย + content ขวา
+    <div style={{ display: "flex", minHeight: "100vh", background: "#f4f4f8" }}>
+
+      {/* SIDEBAR */}
+      <Sidebar
+        activePage={activePage}
+        onNavigate={(path, key) => {
+          setActivePage(key);
+          window.location.href = path;
+        }}
+      />
+
+      {/* MAIN CONTENT */}
+      <main style={{
+        flex: 1,
+        overflow: "auto",
+        display: "flex",
+        flexDirection: "column",
+        gap: "20px",
+        padding: "24px",
+        minWidth: 0,
+      }}>
+
+        {/* HEADER */}
+        <TopSection systemName="LMS" version="1.0.0" />
+
+        {/* ERROR */}
+        {error && (
+          <div style={{
+            padding: "12px 16px",
+            borderRadius: "10px",
+            background: "#fff0f0",
+            border: "1px solid #fad4d4",
+            color: "#c0392b",
+            fontSize: "13.5px",
+            fontFamily: "'DM Sans',sans-serif",
+          }}>
+            ⚠️ {error}
+          </div>
+        )}
+
+        {/* SUMMARY */}
+        <StatsCards logs={logs} pagination={pagination} />
+
+        {/* TIMELINE */}
+        <TimelineChart logs={logs} />
+
+        {/* FILTER */}
+        <FilterBar
+          search={search}
+          setSearch={(v) => { setSearch(v); resetPage(); }}
+          tenant={tenant}
+          setTenant={(v) => { setTenant(v); resetPage(); }}
+          dateRange={dateRange}
+          setDateRange={(v) => { setDateRange(v); resetPage(); }}
+          tenants={tenantList}
+          resetPage={resetPage}
+        />
+
+        {/* TABLE */}
+        <LogsTable
+          logs={logs}
+          pagination={pagination}
+          onPageChange={setPage}
+          loading={loading}
+        />
+
+      </main>
     </div>
   );
 }
