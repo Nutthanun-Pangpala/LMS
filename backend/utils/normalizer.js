@@ -4,7 +4,6 @@ exports.normalizeLog = (rawData) => {
     }
     
     let normalized = {
-        // แก้ไขเป็น new Date() และใช้ .slice() ให้ถูกต้อง 
         at_timestamp: rawData['@timestamp']
             ? new Date(rawData['@timestamp']).toISOString().slice(0, 19).replace('T', ' ')
             : new Date().toISOString().slice(0, 19).replace('T', ' '),
@@ -15,7 +14,6 @@ exports.normalizeLog = (rawData) => {
         src_ip: rawData.ip || rawData.src_ip || null,
         user: rawData.user || null,
         host: rawData.host || null,
-        // ลบเครื่องหมาย / ออก 
         raw: JSON.stringify(rawData) 
     };
 
