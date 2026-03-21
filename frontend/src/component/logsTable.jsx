@@ -10,8 +10,12 @@ const SEVERITY_CONFIG = {
   debug:    { bg: "#f4f4f8", color: "#6060a0", border: "#d0d0e8", icon: Terminal, label: "Debug" },
 };
 
+const SEVERITY_INT_MAP = { 5: "critical", 4: "error", 3: "warning", 2: "info", 1: "debug", 0: "success" };
+
 const getSeverityConfig = (sev) => {
-  const key = String(sev ?? "").toLowerCase();
+  const key = typeof sev === "number"
+    ? (SEVERITY_INT_MAP[sev] ?? "debug")
+    : String(sev ?? "").toLowerCase();
   return SEVERITY_CONFIG[key] || {
     bg: "#f4f4f7", color: "#555570", border: "#d8d8e8", icon: Zap, label: key || "—",
   };

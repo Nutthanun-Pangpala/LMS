@@ -2,13 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import FilterBar from "../component/filterbar";
 import LogsTable from "../component/logsTable";
 import Sidebar from "../component/sidebar";
-import StatsCards from "../component/statsCards";
-import TimelineChart from "../component/timelineChart";
-import TopSection from "../component/topSection";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-function Dashboard() {
+function LogsPage() {
   const [logs, setLogs]             = useState([]);
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading]       = useState(false);
@@ -18,7 +15,6 @@ function Dashboard() {
   const [tenant, setTenant]         = useState("");
   const [dateRange, setDateRange]   = useState({ from: "", to: "" });
   const [page, setPage]             = useState(1);
-  const [activePage, setActivePage] = useState("dashboard");
   const [tenantList, setTenantList] = useState([]);
 
   const fetchLogs = useCallback(async () => {
@@ -26,7 +22,7 @@ function Dashboard() {
     setError(null);
     try {
       const token = localStorage.getItem("token");
-      const params = new URLSearchParams({ page, limit: 10 });
+      const params = new URLSearchParams({ page, limit: 20 });
       if (tenant)         params.set("tenant", tenant);
       if (search)         params.set("search", search);
       if (dateRange.from) params.set("from", dateRange.from);
@@ -40,7 +36,6 @@ function Dashboard() {
 
       const data = await res.json();
       const rows = Array.isArray(data) ? data : (data.data ?? []);
-
       setLogs(rows);
       setPagination(Array.isArray(data) ? null : (data.pagination ?? null));
       setTenantList((prev) => {
@@ -66,34 +61,52 @@ function Dashboard() {
     <div className="app-layout">
 
       {/* SIDEBAR */}
-      <Sidebar
-        activePage={activePage}
-        onNavigate={(path, key) => {
-          setActivePage(key);
-          window.location.href = path;
-        }}
-      />
+      <Sidebar activePage="logs" onNavigate={(path) => { window.location.href = path; }} />
 
       {/* MAIN */}
-      <main className="app-main" style={{ display: "flex", flexDirection: "column", gap: "20px", padding: "24px" }}>
+      <main className="app-main" style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "24px" }}>
 
-        <TopSection systemName="LMS" version="1.0.0" />
+        {/* Page header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <h1>Logs</h1>
+            <p style={{ fontSize: "13px", color: "var(--color-muted)", marginTop: "4px" }}>
+              {pagination ? `${pagination.total.toLocaleString()} total logs` : `${logs.length} logs`}
+            </p>
+          </div>
+          <button
+            onClick={fetchLogs}
+            disabled={loading}
+            style={{
+              display: "flex", alignItems: "center", gap: "6px",
+              padding: "8px 14px", borderRadius: "var(--radius-md)",
+              border: "1px solid var(--color-border)",
+              background: "var(--color-surface)",
+              fontSize: "13px", fontWeight: 500,
+              cursor: loading ? "not-allowed" : "pointer",
+              color: loading ? "var(--color-muted)" : "var(--color-text)",
+              fontFamily: "inherit", transition: "background 0.12s",
+            }}
+          >
+            {loading ? "Loading..." : "↻ Refresh"}
+          </button>
+        </div>
 
+        {/* Error */}
         {error && (
           <div style={{
-            padding: "12px 16px",
+            padding: "10px 14px",
             borderRadius: "var(--radius-md)",
             background: "var(--color-danger-bg)",
             border: "1px solid var(--color-danger-bd)",
             color: "var(--color-danger)",
-            fontSize: "13.5px",
+            fontSize: "13px",
           }}>
             ⚠️ {error}
           </div>
         )}
 
-        <StatsCards logs={logs} pagination={pagination} />
-        <TimelineChart logs={logs} />
+        {/* Filter */}
         <FilterBar
           search={search}
           setSearch={(v) => { setSearch(v); resetPage(); }}
@@ -104,6 +117,8 @@ function Dashboard() {
           tenants={tenantList}
           resetPage={resetPage}
         />
+
+        {/* Table */}
         <LogsTable
           logs={logs}
           pagination={pagination}
@@ -116,4 +131,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default LogsPage;

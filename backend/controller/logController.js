@@ -1,6 +1,22 @@
 const pool = require('../db/db');
 const { normalizeLog } = require('../utils/normalizer');
 
+// severity string → int (ใช้กับ DB column INT)
+const SEVERITY_MAP = {
+  critical: 5,
+  error:    4,
+  warning:  3,
+  info:     2,
+  debug:    1,
+  success:  0,
+};
+
+const toSeverityInt = (val) => {
+  if (val === null || val === undefined || val === '') return 0;
+  if (typeof val === 'number') return val;
+  return SEVERITY_MAP[String(val).toLowerCase()] ?? 0;
+};
+
 exports.ingestLog = async (req, res) => {
   try {
     if (!req.body || Object.keys(req.body).length === 0) {
@@ -20,7 +36,7 @@ exports.ingestLog = async (req, res) => {
       normalizedData.at_timestamp,
       normalizedData.tenant,
       normalizedData.source,
-      normalizedData.severity || 0,
+      toSeverityInt(normalizedData.severity),
       normalizedData.event_type,
       normalizedData.src_ip,
       normalizedData.user,
@@ -29,7 +45,6 @@ exports.ingestLog = async (req, res) => {
 
     await pool.execute(query, values);
 
-    console.log(`Log ingested — tenant=${normalizedData.tenant} source=${normalizedData.source} event_type=${normalizedData.event_type}`);
     res.status(202).json({ message: 'Log ingested and normalized' });
 
   } catch (error) {

@@ -6,6 +6,6 @@ const { protect, restrictToTenant, authorize } = require('../utils/authMiddlewar
 
 
 router.get('/getLogs',protect,restrictToTenant,logController.getLogs);
-router.post('/ingestLog',protect,authorize('admin'),logController.ingestLog);
+router.post('/ingestLog',logController.ingestLog);//protect,authorize('admin'),logController.ingestLog);
 
 module.exports = router;

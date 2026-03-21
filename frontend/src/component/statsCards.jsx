@@ -6,8 +6,12 @@ const CARD_ICONS = { FileText, XCircle, AlertTriangle, Info };
 function StatsCards({ logs = [], pagination = null }) {
   const safeList = Array.isArray(logs) ? logs : [];
 
+  const SEVERITY_INT = { critical: 5, error: 4, warning: 3, info: 2, debug: 1, success: 0 };
   const bySeverity = (sev) =>
-    safeList.filter((l) => String(l.severity ?? "").toLowerCase() === sev).length;
+    safeList.filter((l) => {
+      const v = l.severity;
+      return typeof v === "number" ? v === SEVERITY_INT[sev] : String(v ?? "").toLowerCase() === sev;
+    }).length;
 
   const total    = pagination?.total ?? safeList.length;
   const errors   = bySeverity("error");

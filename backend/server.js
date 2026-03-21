@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const logRoutes = require('./router/logRout');
 const authRoutes = require('./router/authRout');
+const tenantRoutes = require('./router/tenantRout');
 
 const app = express();
 app.use(cors());
@@ -13,6 +14,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/logs', logRoutes);
 
 app.use('/api/auth', authRoutes);
+
+app.use('/api/tenants', tenantRoutes);
 
 
 

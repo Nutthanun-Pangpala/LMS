@@ -1,1 +1,166 @@
-@import "tailwindcss";
+/* ==========================================
+   LMS — Global App CSS
+   ========================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
+
+/* ========== Reset ========== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ========== Root Variables ========== */
+:root {
+  --font-sans: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'DM Mono', 'Menlo', 'Courier New', monospace;
+
+  /* Colors — Light */
+  --color-bg:        #f4f4f8;
+  --color-surface:   #ffffff;
+  --color-surface-2: #f7f7fb;
+  --color-border:    #e8e8ed;
+  --color-border-2:  #d0d0da;
+  --color-text:      #111118;
+  --color-muted:     #7878a0;
+  --color-accent:    #5b5bd6;
+  --color-accent-bg: #ededfb;
+  --color-accent-bd: #c8c8f4;
+
+  /* Semantic */
+  --color-danger:    #c0392b;
+  --color-danger-bg: #fff0f0;
+  --color-danger-bd: #fad4d4;
+  --color-warning:   #92660a;
+  --color-warning-bg:#fffbea;
+  --color-success:   #1a7f45;
+  --color-success-bg:#eefaf3;
+  --color-info:      #2c5cc5;
+  --color-info-bg:   #eef4ff;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05);
+
+  /* Radius */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  18px;
+  --radius-full: 9999px;
+}
+
+/* ========== Dark Mode ========== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg:        #111118;
+    --color-surface:   #16161e;
+    --color-surface-2: #1c1c28;
+    --color-border:    #2a2a3a;
+    --color-border-2:  #3a3a50;
+    --color-text:      #ededf5;
+    --color-muted:     #7070a0;
+    --color-accent:    #7c7ce0;
+    --color-accent-bg: #1e1e3a;
+    --color-accent-bd: #3a3a6a;
+
+    --color-danger:    #f08080;
+    --color-danger-bg: #2a1515;
+    --color-danger-bd: #5a2020;
+    --color-warning:   #d4a040;
+    --color-warning-bg:#2a2010;
+    --color-success:   #50c878;
+    --color-success-bg:#0f2a1a;
+    --color-info:      #6090e0;
+    --color-info-bg:   #101828;
+
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04);
+  }
+}
+
+/* ========== Base ========== */
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* ========== App Layout ========== */
+/* .app-layout ใช้ใน pages ที่มี Sidebar เท่านั้น */
+.app-layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  background: var(--color-bg);
+}
+
+/* ========== Scrollbar ========== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-2);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-muted); }
+
+/* ========== Typography ========== */
+h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+h2 { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+h3 { font-size: 15px; font-weight: 500; }
+p  { font-size: 14px; color: var(--color-text); }
+code, pre {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+/* ========== Links ========== */
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+/* ========== Focus ========== */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ========== Utility ========== */
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
